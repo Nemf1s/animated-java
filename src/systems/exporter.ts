@@ -10,6 +10,7 @@ import { Variant } from '../variants'
 import { hashAnimations, renderProjectAnimations } from './animationRenderer'
 import compileDataPack from './datapackCompiler'
 import resourcepackCompiler from './resourcepackCompiler'
+import { exportJSON } from './jsonCompiler'
 import { hashRig, renderRig } from './rigRenderer'
 import { isCubeValid } from './util'
 
@@ -124,24 +125,23 @@ async function actuallyExportProject(forceSave = true) {
 			modelExportFolder,
 		})
 
-		// if (aj.enable_plugin_mode) {
-		// 	exportJSON({
-		// 		rig,
-		// 		animations,
-		// 		displayItemPath,
-		// 		textureExportFolder,
-		// 		modelExportFolder,
-		// 	})
-		// } else {
-		if (aj.data_pack_export_mode !== 'none') {
-			await compileDataPack(aj.target_minecraft_versions, {
-				rig,
-				animations,
-				dataPackFolder,
-				rigHash,
-				animationHash,
-			})
-		}
+                if (aj.enable_plugin_mode) {
+                        exportJSON({
+                                rig,
+                                animations,
+                                displayItemPath,
+                                textureExportFolder,
+                                modelExportFolder,
+                        })
+                } else if (aj.data_pack_export_mode !== 'none') {
+                        await compileDataPack(aj.target_minecraft_versions, {
+                                rig,
+                                animations,
+                                dataPackFolder,
+                                rigHash,
+                                animationHash,
+                        })
+                }
 
 		Project!.last_used_export_namespace = aj.export_namespace
 		console.timeEnd('Exporting project took')
