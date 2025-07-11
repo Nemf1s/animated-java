@@ -38,6 +38,7 @@ export interface IRenderedElement {
 	from: number[]
 	to: number[]
 	shade?: boolean
+	light_emission?: number
 	rotation?:
 		| {
 				angle: number
@@ -201,6 +202,11 @@ function renderCube(cube: Cube, rig: IRenderedRig, model: IRenderedModel) {
 	element.from = cube.from.slice()
 	element.to = cube.to.slice()
 
+	// Light emission is only written when greater than 0
+	if ((cube as any).light_emission && (cube as any).light_emission > 0) {
+		element.light_emission = (cube as any).light_emission
+	}
+
 	if (cube.inflate) {
 		element.from = element.from.map(v => v - cube.inflate)
 		element.to = element.to.map(v => v + cube.inflate)
@@ -299,15 +305,15 @@ function getBoneBoundingBox(group: Group) {
 			new THREE.Vector3(
 				child.from[0] - child.inflate,
 				child.from[1] - child.inflate,
-				child.from[2] - child.inflate
-			)
+				child.from[2] - child.inflate,
+			),
 		)
 		box.expandByPoint(
 			new THREE.Vector3(
 				child.to[0] + child.inflate,
 				child.to[1] + child.inflate,
-				child.to[2] + child.inflate
-			)
+				child.to[2] + child.inflate,
+			),
 		)
 	}
 	return box
@@ -316,7 +322,7 @@ function getBoneBoundingBox(group: Group) {
 function renderGroup(
 	group: Group,
 	rig: IRenderedRig,
-	defaultVariant: IRenderedVariant
+	defaultVariant: IRenderedVariant,
 ): INodeStructure | undefined {
 	if (!group.export) return
 	const parentId = group.parent instanceof Group ? group.parent.uuid : undefined
@@ -410,7 +416,7 @@ function renderGroup(
 
 	const diff = new THREE.Vector3().subVectors(
 		renderedBone.bounding_box.max,
-		renderedBone.bounding_box.min
+		renderedBone.bounding_box.min,
 	)
 	const max = Math.max(diff.x, diff.y, diff.z)
 	const scale = Math.min(1, 24 / max)
@@ -737,7 +743,7 @@ export function renderRig(modelExportFolder: string, textureExportFolder: string
 			}
 			case node instanceof Cube: {
 				throw new IntentionalExportError(
-					`Cubes cannot be exported as root nodes. Please parent them to a bone. (Found '${node.name}' outside of a bone)`
+					`Cubes cannot be exported as root nodes. Please parent them to a bone. (Found '${node.name}' outside of a bone)`,
 				)
 			}
 			default:
