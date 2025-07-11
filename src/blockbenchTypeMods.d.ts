@@ -81,6 +81,7 @@ declare global {
 
 	interface Cube {
 		rotationInvalid: boolean
+		light_emission?: number
 	}
 
 	interface CubeFace {
